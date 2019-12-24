@@ -307,6 +307,8 @@ class DjangoSession(MemorySession):
         if not self.save_entities:
             return
 
+        print(tlo)
+
         rows = self._entities_to_rows(tlo)
         if not rows:
             return
@@ -324,13 +326,13 @@ class DjangoSession(MemorySession):
         #     c.close()
         print(rows)
         try:
-            entity = TelethonEntity.objects.get(identifier=rows[0])
+            entity = TelethonEntity.objects.get(identifier=rows[0][0])
         except TelethonEntity.DoesNotExist:
-            entity = TelethonEntity(identifier=rows[0])
-        entity.hash = rows[1]
-        entity.username = rows[2]
-        entity.phone = rows[3]
-        entity.name = rows[4]
+            entity = TelethonEntity(identifier=rows[0][0])
+        entity.hash = rows[0][1]
+        entity.username = rows[0][2]
+        entity.phone = rows[0][3]
+        entity.name = rows[0][4]
         entity.save()
 
     def get_entity_rows_by_phone(self, phone):

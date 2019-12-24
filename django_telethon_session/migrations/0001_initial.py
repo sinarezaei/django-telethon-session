@@ -14,8 +14,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TelethonEntity',
             fields=[
-                ('identifier', models.IntegerField(primary_key=True, serialize=False)),
-                ('hash', models.IntegerField()),
+                ('identifier', models.BigIntegerField(primary_key=True, serialize=False)),
+                ('hash', models.BigIntegerField()),
                 ('username', models.CharField(blank=True, max_length=1000, null=True)),
                 ('phone', models.CharField(blank=True, max_length=1000, null=True)),
                 ('name', models.CharField(blank=True, max_length=1000, null=True)),
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TelethonSession',
             fields=[
-                ('dc_id', models.IntegerField(primary_key=True, serialize=False)),
+                ('dc_id', models.BigIntegerField(primary_key=True, serialize=False)),
                 ('server_address', models.CharField(blank=True, max_length=1000, null=True)),
                 ('port', models.IntegerField(blank=True, null=True)),
                 ('auth_key', models.BinaryField()),
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TelethonUpdateState',
             fields=[
-                ('identifier', models.IntegerField(primary_key=True, serialize=False)),
+                ('identifier', models.BigIntegerField(primary_key=True, serialize=False)),
                 ('pts', models.IntegerField(blank=True, null=True)),
                 ('qts', models.IntegerField(blank=True, null=True)),
                 ('date', models.IntegerField(blank=True, null=True)),
@@ -44,12 +44,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TelethonSentFile',
             fields=[
-                ('identifier', models.IntegerField(primary_key=True, serialize=False)),
+                ('identifier', models.BigIntegerField(primary_key=True, serialize=False)),
                 ('md5_digest', models.BinaryField()),
                 ('file_size', models.IntegerField(blank=True, null=True)),
                 ('file_type', models.IntegerField(blank=True, null=True)),
                 ('file_id', models.IntegerField(blank=True, null=True)),
-                ('hash', models.IntegerField(blank=True, null=True)),
+                ('hash', models.BigIntegerField(blank=True, null=True)),
             ],
             options={
                 'unique_together': {('md5_digest', 'file_size', 'file_type')},

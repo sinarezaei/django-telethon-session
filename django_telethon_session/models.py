@@ -2,7 +2,7 @@ from django.db import models
 
 
 class TelethonSession(models.Model):
-    dc_id = models.IntegerField(primary_key=True, null=False, blank=False)
+    dc_id = models.BigIntegerField(primary_key=True, null=False, blank=False)
     server_address = models.CharField(max_length=1000, blank=True, null=True)
     port = models.IntegerField(blank=True, null=True)
     auth_key = models.BinaryField(blank=False, null=False)
@@ -19,8 +19,8 @@ class TelethonSession(models.Model):
 
 
 class TelethonEntity(models.Model):
-    identifier = models.IntegerField(primary_key=True, blank=False, null=False)
-    hash = models.IntegerField(blank=False, null=False)
+    identifier = models.BigIntegerField(primary_key=True, blank=False, null=False)
+    hash = models.BigIntegerField(blank=False, null=False)
     username = models.CharField(max_length=1000, blank=True, null=True)
     phone = models.CharField(max_length=1000, blank=True, null=True)
     name = models.CharField(max_length=1000, blank=True, null=True)
@@ -33,16 +33,16 @@ class TelethonSentFile(models.Model):
     class Meta:
         unique_together = (("md5_digest", "file_size", "file_type"),)
 
-    identifier = models.IntegerField(primary_key=True, blank=False, null=False)
+    identifier = models.BigIntegerField(primary_key=True, blank=False, null=False)
     md5_digest = models.BinaryField(blank=False, null=False)
     file_size = models.IntegerField(blank=True, null=True)
     file_type = models.IntegerField(blank=True, null=True)
     file_id = models.IntegerField(blank=True, null=True)
-    hash = models.IntegerField(blank=True, null=True)
+    hash = models.BigIntegerField(blank=True, null=True)
 
 
 class TelethonUpdateState(models.Model):
-    identifier = models.IntegerField(primary_key=True, blank=False, null=False)
+    identifier = models.BigIntegerField(primary_key=True, blank=False, null=False)
     pts = models.IntegerField(blank=True, null=True)
     qts = models.IntegerField(blank=True, null=True)
     date = models.IntegerField(blank=True, null=True)
