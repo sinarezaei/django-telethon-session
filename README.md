@@ -1,6 +1,6 @@
 \![alt text][pypi_version] ![alt text][licence_version]
 
-# Django Telethon Session: A JSON Serializer/Deserializer for Python
+# Django Telethon Session
 
 A Telethon session storage implementation backed for Django ORM to use telethon in django projects.
 
