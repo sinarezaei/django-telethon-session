@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('dc_id', models.BigIntegerField(primary_key=True, serialize=False)),
                 ('server_address', models.CharField(blank=True, max_length=1000, null=True)),
                 ('port', models.IntegerField(blank=True, null=True)),
-                ('auth_key', models.BinaryField()),
+                ('auth_key', models.BinaryField(editable=True)),
                 ('takeout_id', models.IntegerField(blank=True, null=True)),
             ],
         ),
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
             name='TelethonSentFile',
             fields=[
                 ('identifier', models.BigIntegerField(primary_key=True, serialize=False)),
-                ('md5_digest', models.BinaryField()),
+                ('md5_digest', models.BinaryField(editable=True)),
                 ('file_size', models.IntegerField(blank=True, null=True)),
                 ('file_type', models.IntegerField(blank=True, null=True)),
                 ('file_id', models.IntegerField(blank=True, null=True)),

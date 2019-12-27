@@ -36,8 +36,28 @@ class DjangoSession(MemorySession):
 
     def __init__(self):
         super().__init__()
-        # self.filename = ':memory:'
+        # print('django session init')
         self.save_entities = True
+
+        db_sessions = TelethonSession.objects.all()
+        if db_sessions.count() > 0:
+            db_session = db_sessions[0]
+            self._dc_id = db_session.dc_id
+            self._server_address = db_session.server_address
+            self._port = db_session.port
+            self._takeout_id = db_session.takeout_id
+
+            akey = db_session.auth_key
+            if isinstance(akey, memoryview):
+                akey = akey.tobytes()
+            self._auth_key = AuthKey(data=akey)
+            # print('django session init finish 1')
+        else:
+            self._update_session_table()
+            self.save()
+            # print('django session init finish 2')
+
+        # print('django session init finish final')
 
         # self._conn = None
         # c = self._cursor()
@@ -107,6 +127,7 @@ class DjangoSession(MemorySession):
         #     self.save()
 
     def clone(self, to_instance=None):
+        # print('django session clone')
         cloned = super().clone(to_instance)
         cloned.save_entities = self.save_entities
         return cloned
@@ -156,6 +177,10 @@ class DjangoSession(MemorySession):
     # Data from sessions should be kept as properties
     # not to fetch the database every time we need it
     def set_dc(self, dc_id, server_address, port):
+        # print('django session set_dc')
+        # print('django session set_dc dc_id ' + str(dc_id))
+        # print('django session set_dc server_address ' + str(server_address))
+        # print('django session set_dc port ' + str(port))
         super().set_dc(dc_id, server_address, port)
         self._update_session_table()
 
@@ -166,23 +191,34 @@ class DjangoSession(MemorySession):
         # else:
         #     self._auth_key = None
         auth_keys = TelethonSession.objects.all()
-        print(auth_keys)
+        # print(auth_keys)
         if auth_keys and auth_keys[0]:
-            self._auth_key = AuthKey(data=auth_keys[0].auth_key)
+            # print(auth_keys[0].auth_key)
+            # print(type(auth_keys[0].auth_key))
+            akey = auth_keys[0].auth_key
+            if isinstance(akey, memoryview):
+                akey = akey.tobytes()
+            self._auth_key = AuthKey(data=akey)
         else:
-            self.auth_key = None
+            self._auth_key = None
 
     @MemorySession.auth_key.setter
     def auth_key(self, value):
+        # print('django session auth_key')
+        # print('django session auth_key value ' + str(value))
+        # print('django session auth_key value ' + str(value.key))
         self._auth_key = value
         self._update_session_table()
 
     @MemorySession.takeout_id.setter
     def takeout_id(self, value):
+        # print('django session takeout_id')
+        # print('django session takeout_id value ' + str(value))
         self._takeout_id = value
         self._update_session_table()
 
     def _update_session_table(self):
+        # print('django session _update_session_table')
         # c = self._cursor()
         # While we can save multiple rows into the sessions table
         # currently we only want to keep ONE as the tables don't
@@ -208,6 +244,7 @@ class DjangoSession(MemorySession):
         )
 
     def get_update_state(self, entity_id):
+        # print('django session get_update_state')
         # row = self._execute('select pts, qts, date, seq from update_state '
         #                     'where id = ?', entity_id)
         # if row:
@@ -221,9 +258,11 @@ class DjangoSession(MemorySession):
             date = datetime.datetime.fromtimestamp(update_state.date, tz=datetime.timezone.utc)
             return types.updates.State(update_state.pts, update_state.qts, date, update_state.seq, unread_count=0)
         except TelethonUpdateState.DoesNotExist:
-            return None
+            # return None
+            pass
 
     def set_update_state(self, entity_id, state):
+        # print('django session set_update_state')
         # self._execute('insert or replace into update_state values (?,?,?,?,?)',
         #               entity_id, state.pts, state.qts,
         #               state.date.timestamp(), state.seq)
@@ -238,11 +277,12 @@ class DjangoSession(MemorySession):
         update_state.save()
 
     def save(self):
-        # """Saves the current session object as session_user_id.session"""
+        """Saves the current session object as session_user_id.session"""
         # # This is a no-op if there are no changes to commit, so there's
         # # no need for us to keep track of an "unsaved changes" variable.
         # if self._conn is not None:
         #     self._conn.commit()
+        # print('django session save')
         pass
 
     # def _cursor(self):
@@ -264,16 +304,17 @@ class DjangoSession(MemorySession):
     #         c.close()
 
     def close(self):
-        # """Closes the connection unless we're working in-memory"""
+        """Closes the connection unless we're working in-memory"""
         # if self.filename != ':memory:':
         #     if self._conn is not None:
         #         self._conn.commit()
         #         self._conn.close()
         #         self._conn = None
+        # print('django session close')
         pass
 
     def delete(self):
-        # """Deletes the current session file"""
+        """Deletes the current session file"""
         # if self.filename == ':memory:':
         #     return True
         # try:
@@ -281,6 +322,7 @@ class DjangoSession(MemorySession):
         #     return True
         # except OSError:
         #     return False
+        # print('django session delete')
         TelethonSession.objects.all().delete()
         TelethonUpdateState.objects.all().delete()
         TelethonSentFile.objects.all().delete()
@@ -292,6 +334,7 @@ class DjangoSession(MemorySession):
         """Lists all the sessions of the users who have ever connected
            using this client and never logged out
         """
+        # print('django session list_sessions')
         # return [os.path.splitext(os.path.basename(f))[0]
         #         for f in os.listdir('.') if f.endswith(EXTENSION)]
         return [str(s) for s in TelethonSession.objects.all()]
@@ -304,10 +347,11 @@ class DjangoSession(MemorySession):
 
            Returns True if new input entities were added.
         """
+        # print('django session process_entities')
         if not self.save_entities:
             return
 
-        print(tlo)
+        # print(tlo)
 
         rows = self._entities_to_rows(tlo)
         if not rows:
@@ -324,7 +368,7 @@ class DjangoSession(MemorySession):
         #     # name text
         # finally:
         #     c.close()
-        print(rows)
+        # print(rows)
         try:
             entity = TelethonEntity.objects.get(identifier=rows[0][0])
         except TelethonEntity.DoesNotExist:
@@ -336,18 +380,21 @@ class DjangoSession(MemorySession):
         entity.save()
 
     def get_entity_rows_by_phone(self, phone):
+        # print('django session get_entity_rows_by_phone')
         entity = TelethonEntity.objects.get(phone=phone)
         return [entity.identifier, entity.hash]
         # return self._execute(
         #     'select id, hash from entities where phone = ?', phone)
 
     def get_entity_rows_by_username(self, username):
+        # print('django session get_entity_rows_by_username')
         entity = TelethonEntity.objects.get(username=username)
         return [entity.identifier, entity.hash]
         # return self._execute(
         #     'select id, hash from entities where username = ?', username)
 
     def get_entity_rows_by_name(self, name):
+        # print('django session get_entity_rows_by_name')
         entity = TelethonEntity.objects.get(name=name)
         return [entity.identifier, entity.hash]
         # return self._execute(
@@ -355,6 +402,7 @@ class DjangoSession(MemorySession):
 
     # noinspection PyShadowingBuiltins
     def get_entity_rows_by_id(self, id, exact=True):
+        # print('django session get_entity_rows_by_id')
         if exact:
             entity = TelethonEntity.objects.get(identifier=id)
             return [entity.identifier, entity.hash]
@@ -377,6 +425,7 @@ class DjangoSession(MemorySession):
     # File processing
 
     def get_file(self, md5_digest, file_size, cls):
+        # print('django session get_file')
         try:
             sent_file = TelethonSentFile.objects.get(md5_digest=md5_digest, file_size=file_size, file_type=_SentFileType.from_type(cls).value)
             return cls(sent_file.identifier, sent_file.hash)
@@ -393,6 +442,7 @@ class DjangoSession(MemorySession):
         #     return cls(row[0], row[1])
 
     def cache_file(self, md5_digest, file_size, instance):
+        # print('django session cache_file')
         if not isinstance(instance, (InputDocument, InputPhoto)):
             raise TypeError('Cannot cache %s instance' % type(instance))
 

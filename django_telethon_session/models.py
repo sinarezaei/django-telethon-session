@@ -5,7 +5,7 @@ class TelethonSession(models.Model):
     dc_id = models.BigIntegerField(primary_key=True, null=False, blank=False)
     server_address = models.CharField(max_length=1000, blank=True, null=True)
     port = models.IntegerField(blank=True, null=True)
-    auth_key = models.BinaryField(blank=False, null=False)
+    auth_key = models.BinaryField(blank=False, null=False, editable=True)
     takeout_id = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
@@ -34,7 +34,7 @@ class TelethonSentFile(models.Model):
         unique_together = (("md5_digest", "file_size", "file_type"),)
 
     identifier = models.BigIntegerField(primary_key=True, blank=False, null=False)
-    md5_digest = models.BinaryField(blank=False, null=False)
+    md5_digest = models.BinaryField(blank=False, null=False, editable=True)
     file_size = models.IntegerField(blank=True, null=True)
     file_type = models.IntegerField(blank=True, null=True)
     file_id = models.IntegerField(blank=True, null=True)
