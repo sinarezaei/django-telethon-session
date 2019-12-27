@@ -1,6 +1,6 @@
 \![alt text][pypi_version] ![alt text][licence_version]
 
-# Django Telethon Session: A JSON Serializer/Deserializer for Python
+# Django Telethon Session
 
 A Telethon session storage implementation backed for Django ORM to use telethon in django projects.
 
@@ -10,7 +10,7 @@ Tested with:
 
 Use the following command to install using pip:
 ```
-pip install django_telethon_session
+pip install django-telethon-session
 ```
 
 ## Usage example
@@ -21,7 +21,7 @@ First add django telethon session to your installed apps in your django project 
 ```python
 INSTALLED_APPS = [
     ...,
-    'django-telethon-session',
+    'django_telethon_session',
     ...
 ]
 ```
