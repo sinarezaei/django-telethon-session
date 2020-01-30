@@ -381,22 +381,31 @@ class DjangoSession(MemorySession):
 
     def get_entity_rows_by_phone(self, phone):
         # print('django session get_entity_rows_by_phone')
-        entity = TelethonEntity.objects.get(phone=phone)
-        return [entity.identifier, entity.hash]
+        try:
+            entity = TelethonEntity.objects.get(phone=phone)
+            return [entity.identifier, entity.hash]
+        except TelethonEntity.DoesNotExist:
+            return None
         # return self._execute(
         #     'select id, hash from entities where phone = ?', phone)
 
     def get_entity_rows_by_username(self, username):
         # print('django session get_entity_rows_by_username')
-        entity = TelethonEntity.objects.get(username=username)
-        return [entity.identifier, entity.hash]
+        try:
+            entity = TelethonEntity.objects.get(username=username)
+            return [entity.identifier, entity.hash]
+        except TelethonEntity.DoesNotExist:
+            return None
         # return self._execute(
         #     'select id, hash from entities where username = ?', username)
 
     def get_entity_rows_by_name(self, name):
         # print('django session get_entity_rows_by_name')
-        entity = TelethonEntity.objects.get(name=name)
-        return [entity.identifier, entity.hash]
+        try:
+            entity = TelethonEntity.objects.get(name=name)
+            return [entity.identifier, entity.hash]
+        except TelethonEntity.DoesNotExist:
+            return None
         # return self._execute(
         #     'select id, hash from entities where name = ?', name)
 
@@ -404,17 +413,23 @@ class DjangoSession(MemorySession):
     def get_entity_rows_by_id(self, id, exact=True):
         # print('django session get_entity_rows_by_id')
         if exact:
-            entity = TelethonEntity.objects.get(identifier=id)
-            return [entity.identifier, entity.hash]
+            try:
+                entity = TelethonEntity.objects.get(identifier=id)
+                return [entity.identifier, entity.hash]
+            except TelethonEntity.DoesNotExist:
+                return None
             # return self._execute(
             #     'select id, hash from entities where id = ?', id)
         else:
-            entity = TelethonEntity.objects.get(identifier__in=[
-                utils.get_peer_id(PeerUser(id)),
-                utils.get_peer_id(PeerChat(id)),
-                utils.get_peer_id(PeerChannel(id))
-            ])
-            return [entity.identifier, entity.hash]
+            try:
+                entity = TelethonEntity.objects.get(identifier__in=[
+                    utils.get_peer_id(PeerUser(id)),
+                    utils.get_peer_id(PeerChat(id)),
+                    utils.get_peer_id(PeerChannel(id))
+                ])
+                return [entity.identifier, entity.hash]
+            except TelethonEntity.DoesNotExist:
+                return None
             # return self._execute(
             #     'select id, hash from entities where id in (?,?,?)',
             #     utils.get_peer_id(PeerUser(id)),
