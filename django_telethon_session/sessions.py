@@ -235,12 +235,14 @@ class DjangoSession(MemorySession):
         #     self._takeout_id
         # ))
         # c.close()
-        TelethonSession.objects.create(
+        TelethonSession.objects.update_or_create(
             dc_id=self._dc_id,
-            server_address=self._server_address,
-            port=self._port,
-            auth_key=self._auth_key.key if self._auth_key else b'',
-            takeout_id=self._takeout_id
+            defauls={
+                'server_address': self._server_address,
+                'port': self._port,
+                'auth_key': self._auth_key.key if self._auth_key else b'',
+                'takeout_id': self._takeout_id
+            }
         )
 
     def get_update_state(self, entity_id):
