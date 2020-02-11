@@ -237,7 +237,7 @@ class DjangoSession(MemorySession):
         # c.close()
         TelethonSession.objects.update_or_create(
             dc_id=self._dc_id,
-            defauls={
+            defaults={
                 'server_address': self._server_address,
                 'port': self._port,
                 'auth_key': self._auth_key.key if self._auth_key else b'',
