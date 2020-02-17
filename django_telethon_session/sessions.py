@@ -240,7 +240,7 @@ class DjangoSession(MemorySession):
             defaults={
                 'server_address': self._server_address,
                 'port': self._port,
-                'auth_key': self._auth_key.key if self._auth_key else b'',
+                'auth_key': self._auth_key.key if self._auth_key is not None else b'',
                 'takeout_id': self._takeout_id
             }
         )
