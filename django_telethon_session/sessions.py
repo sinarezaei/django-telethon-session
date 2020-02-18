@@ -39,9 +39,11 @@ class DjangoSession(MemorySession):
         # print('django session init')
         self.save_entities = True
 
-        db_sessions = TelethonSession.objects.all()
-        if db_sessions.count() > 0:
-            db_session = db_sessions[0]
+        # db_sessions = TelethonSession.objects.all()
+        # if db_sessions.count() > 0:
+        #     db_session = db_sessions[0]
+        db_session = TelethonSession.objects.all().first()
+        if db_session is not None:
             self._dc_id = db_session.dc_id
             self._server_address = db_session.server_address
             self._port = db_session.port
