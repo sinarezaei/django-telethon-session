@@ -30,4 +30,8 @@ class Migration(migrations.Migration):
             name='client_session_name',
             field=models.CharField(blank=False, default='default_client', max_length=1000, null=False),
         ),
+        migrations.AlterUniqueTogether(
+            name='TelethonSentFile',
+            unique_together={('client_session_name', 'md5_digest', 'file_size', 'file_type')},
+        ),
     ]

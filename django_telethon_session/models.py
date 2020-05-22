@@ -33,7 +33,7 @@ class TelethonEntity(models.Model):
 
 class TelethonSentFile(models.Model):
     class Meta:
-        unique_together = (("md5_digest", "file_size", "file_type"),)
+        unique_together = (("client_session_name", "md5_digest", "file_size", "file_type"),)
 
     client_session_name = models.CharField(max_length=1000, blank=False, null=False, default='default_client')
     identifier = models.BigIntegerField(primary_key=True, blank=False, null=False)
