@@ -34,15 +34,16 @@ class DjangoSession(MemorySession):
        through an official Telegram client to revoke the authorization.
     """
 
-    def __init__(self):
+    def __init__(self, client_session_name: str = 'default'):
         super().__init__()
         # print('django session init')
         self.save_entities = True
+        self.client_session_name = client_session_name
 
         # db_sessions = TelethonSession.objects.all()
         # if db_sessions.count() > 0:
         #     db_session = db_sessions[0]
-        db_session = TelethonSession.objects.all().first()
+        db_session = TelethonSession.objects.filter(client_session_name=self.client_session_name).first()
         if db_session is not None:
             self._dc_id = db_session.dc_id
             self._server_address = db_session.server_address
@@ -192,7 +193,7 @@ class DjangoSession(MemorySession):
         #     self._auth_key = AuthKey(data=row[0])
         # else:
         #     self._auth_key = None
-        auth_keys = TelethonSession.objects.all()
+        auth_keys = TelethonSession.objects.filter(client_session_name=self.client_session_name)
         # print(auth_keys)
         if auth_keys and auth_keys[0]:
             # print(auth_keys[0].auth_key)
@@ -228,7 +229,7 @@ class DjangoSession(MemorySession):
         # some more work before being able to save auth_key's for
         # multiple DCs. Probably done differently.
         # c.execute('delete from sessions')
-        TelethonSession.objects.all().delete()
+        TelethonSession.objects.filter(client_session_name=self.client_session_name).delete()
         # c.execute('insert or replace into sessions values (?,?,?,?,?)', (
         #     self._dc_id,
         #     self._server_address,
@@ -238,8 +239,9 @@ class DjangoSession(MemorySession):
         # ))
         # c.close()
         TelethonSession.objects.update_or_create(
-            dc_id=self._dc_id,
+            client_session_name=self.client_session_name,
             defaults={
+                'dc_id': self._dc_id,
                 'server_address': self._server_address,
                 'port': self._port,
                 'auth_key': self._auth_key.key if self._auth_key is not None else b'',
@@ -257,7 +259,7 @@ class DjangoSession(MemorySession):
         #         date, tz=datetime.timezone.utc)
         #     return types.updates.State(pts, qts, date, seq, unread_count=0)
         try:
-            update_state = TelethonUpdateState.objects.get(pk=entity_id)
+            update_state = TelethonUpdateState.objects.get(client_session_name=self.client_session_name, pk=entity_id)
 
             date = datetime.datetime.fromtimestamp(update_state.date, tz=datetime.timezone.utc)
             return types.updates.State(update_state.pts, update_state.qts, date, update_state.seq, unread_count=0)
@@ -271,9 +273,10 @@ class DjangoSession(MemorySession):
         #               entity_id, state.pts, state.qts,
         #               state.date.timestamp(), state.seq)
         try:
-            update_state = TelethonUpdateState.objects.get(identifier=entity_id)
+            update_state = TelethonUpdateState.objects.get(client_session_name=self.client_session_name,
+                                                           identifier=entity_id)
         except TelethonUpdateState.DoesNotExist:
-            update_state = TelethonUpdateState(identifier=entity_id)
+            update_state = TelethonUpdateState(client_session_name=self.client_session_name, identifier=entity_id)
         update_state.pts = state.pts
         update_state.qts = state.qts
         update_state.date = state.date.timestamp()
@@ -327,10 +330,10 @@ class DjangoSession(MemorySession):
         # except OSError:
         #     return False
         # print('django session delete')
-        TelethonSession.objects.all().delete()
-        TelethonUpdateState.objects.all().delete()
-        TelethonSentFile.objects.all().delete()
-        TelethonEntity.objects.all().delete()
+        TelethonSession.objects.filter(client_session_name=self.client_session_name).delete()
+        TelethonUpdateState.objects.filter(client_session_name=self.client_session_name).delete()
+        TelethonSentFile.objects.filter(client_session_name=self.client_session_name).delete()
+        TelethonEntity.objects.filter(client_session_name=self.client_session_name).delete()
         return True
 
     @classmethod
@@ -374,9 +377,9 @@ class DjangoSession(MemorySession):
         #     c.close()
         # print(rows)
         try:
-            entity = TelethonEntity.objects.get(identifier=rows[0][0])
+            entity = TelethonEntity.objects.get(client_session_name=self.client_session_name, identifier=rows[0][0])
         except TelethonEntity.DoesNotExist:
-            entity = TelethonEntity(identifier=rows[0][0])
+            entity = TelethonEntity(client_session_name=self.client_session_name, identifier=rows[0][0])
         entity.hash = rows[0][1]
         entity.username = rows[0][2]
         entity.phone = rows[0][3]
@@ -386,7 +389,7 @@ class DjangoSession(MemorySession):
     def get_entity_rows_by_phone(self, phone):
         # print('django session get_entity_rows_by_phone')
         try:
-            entity = TelethonEntity.objects.get(phone=phone)
+            entity = TelethonEntity.objects.get(client_session_name=self.client_session_name, phone=phone)
             return [entity.identifier, entity.hash]
         except TelethonEntity.DoesNotExist:
             return None
@@ -396,7 +399,7 @@ class DjangoSession(MemorySession):
     def get_entity_rows_by_username(self, username):
         # print('django session get_entity_rows_by_username')
         try:
-            entity = TelethonEntity.objects.get(username=username)
+            entity = TelethonEntity.objects.get(client_session_name=self.client_session_name, username=username)
             return [entity.identifier, entity.hash]
         except TelethonEntity.DoesNotExist:
             return None
@@ -406,7 +409,7 @@ class DjangoSession(MemorySession):
     def get_entity_rows_by_name(self, name):
         # print('django session get_entity_rows_by_name')
         try:
-            entity = TelethonEntity.objects.get(name=name)
+            entity = TelethonEntity.objects.get(client_session_name=self.client_session_name, name=name)
             return [entity.identifier, entity.hash]
         except TelethonEntity.DoesNotExist:
             return None
@@ -418,7 +421,7 @@ class DjangoSession(MemorySession):
         # print('django session get_entity_rows_by_id')
         if exact:
             try:
-                entity = TelethonEntity.objects.get(identifier=id)
+                entity = TelethonEntity.objects.get(client_session_name=self.client_session_name, identifier=id)
                 return [entity.identifier, entity.hash]
             except TelethonEntity.DoesNotExist:
                 return None
@@ -426,11 +429,12 @@ class DjangoSession(MemorySession):
             #     'select id, hash from entities where id = ?', id)
         else:
             try:
-                entity = TelethonEntity.objects.get(identifier__in=[
-                    utils.get_peer_id(PeerUser(id)),
-                    utils.get_peer_id(PeerChat(id)),
-                    utils.get_peer_id(PeerChannel(id))
-                ])
+                entity = TelethonEntity.objects.get(client_session_name=self.client_session_name,
+                                                    identifier__in=[
+                                                        utils.get_peer_id(PeerUser(id)),
+                                                        utils.get_peer_id(PeerChat(id)),
+                                                        utils.get_peer_id(PeerChannel(id))
+                                                    ])
                 return [entity.identifier, entity.hash]
             except TelethonEntity.DoesNotExist:
                 return None
@@ -446,7 +450,9 @@ class DjangoSession(MemorySession):
     def get_file(self, md5_digest, file_size, cls):
         # print('django session get_file')
         try:
-            sent_file = TelethonSentFile.objects.get(md5_digest=md5_digest, file_size=file_size, file_type=_SentFileType.from_type(cls).value)
+            sent_file = TelethonSentFile.objects.get(client_session_name=self.client_session_name,
+                                                     md5_digest=md5_digest, file_size=file_size,
+                                                     file_type=_SentFileType.from_type(cls).value)
             return cls(sent_file.identifier, sent_file.hash)
         except TelethonSentFile.DoesNotExist:
             return None
@@ -466,9 +472,12 @@ class DjangoSession(MemorySession):
             raise TypeError('Cannot cache %s instance' % type(instance))
 
         try:
-            sent_file = TelethonSentFile.objects.get(md5_digest=md5_digest, file_size=file_size, file_type=_SentFileType.from_type(type(instance)).value)
+            sent_file = TelethonSentFile.objects.get(client_session_name=self.client_session_name,
+                                                     md5_digest=md5_digest, file_size=file_size,
+                                                     file_type=_SentFileType.from_type(type(instance)).value)
         except TelethonSentFile.DoesNotExist:
-            sent_file = TelethonSentFile(md5_digest=md5_digest, file_size=file_size, file_type=_SentFileType.from_type(type(instance)).value)
+            sent_file = TelethonSentFile(client_session_name=self.client_session_name, md5_digest=md5_digest,
+                                         file_size=file_size, file_type=_SentFileType.from_type(type(instance)).value)
         sent_file.file_id = instance.id
         sent_file.hash = instance.access_hash
         sent_file.save()
